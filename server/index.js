@@ -12,6 +12,10 @@ const server = http.createServer(app);
 app.use(express.json())
 app.use(cors());
 
+const UserRouter = require('./Router/user.router');
+
+app.use('/users', UserRouter);
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`))
 
