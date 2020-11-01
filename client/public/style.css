@@ -4,21 +4,6 @@
     color: red;
 }
 
-.topnav{
-    margin: 0;
-	padding: 0;
-    overflow: hidden;
-    width: 100%;
-    box-shadow: 0 2px 2px -2px rgba(0 0 0 /51%);
-}
-
-.nav-right{
-    float: right;
-    text-align: center;
-    margin: 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
-}
 .pp{
     max-width: 1.5rem;
     border-radius: 50%;
