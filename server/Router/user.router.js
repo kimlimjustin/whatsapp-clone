@@ -46,12 +46,12 @@ router.post('/register', jsonParser, (req, res) => {
         else if(user) res.status(400).json("Email has been token.")
         else{
                 const token = generateToken();
-                const newUser = new User({name, password, email, token});
+                const newUser = new User({name, password, email, token, friends: []});
                 newUser.save()
                 .then(() => {
                     res.json({"Message": "Success", token});
                 })
-                .catch(err => res.status(500).json("Error has occured. Please refresh page"));
+                .catch(err => res.status(500).json(err));
             }
         })
     }
@@ -87,10 +87,10 @@ router.post('/update', jsonParser, (req, res) => {
             else{
                 const token = generateToken();
                 user.token = token;
-                user.email = req.body.email;
+                user.email = req.body.new_email;
                 user.name = req.body.name;
                 user.save()
-                .then(() => res.json({message:"Updated", token: token}))
+                .then(() => res.json({message:"Updated", user}))
                 .catch(err => res.status(500).json(err));
             }
         })
