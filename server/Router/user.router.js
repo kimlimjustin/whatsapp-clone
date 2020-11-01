@@ -12,22 +12,21 @@ const generateToken = () => {
     return randomToken(50);
 }
 
-router.get('/get_by_token/:token', (req, res) => {
-    if(!req.query.key) res.status(403).json("Permission denied.")
+router.post('/get_by_token/', (req, res) => {
+    const key = req.body.SECURITY_KEY;
+    if(key != SECURITY_KEY) res.status(403).json("Permission denied.")
     else{
-        const key = req.query.key;
-        if(key != SECURITY_KEY) res.status(403).json("Permission denied.")
-        else{
-            User.findOne({token: req.params.token})
-            .then(user => {
+        User.findOne({token: req.body.token}, (err, user) => {
+            if(err)res.status(500).json("Error: "+err);
+            else if(!user) res.status(404).json("User not found.")
+            else{
                 user.token = generateToken();
                 user.save()
                 .then(() => res.json(user))
-            })
-            .catch(err => res.status(500).json("Error: "+err));
-        }
-    }
-})
+                .catch(err => res.status(500).json("Error: "+err));
+            }
+    })
+}})
 
 router.get('/get_by_id/:id', (req, res) => {
     if(!req.query.key) res.status(403).json("Permission denied.")
