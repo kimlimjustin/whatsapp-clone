@@ -12,6 +12,25 @@ const generateToken = () => {
     return randomToken(50);
 }
 
+router.post('/get_all_users', jsonParser, (req, res) => {
+    if(!req.body.key) res.status(403).json("Permission denied.")
+    else{
+        const key = req.body.key;
+        if(key !== SECURITY_KEY) res.status(403).json("Permission denied.")
+        else{
+            User.find({})
+            .then(users => {
+                let name = []
+                users.forEach(user => {
+                    name.push(user.email)
+                })
+                res.json(name);
+            })
+            .catch(err => res.status(500).json("Error: "+err));
+        }
+    }
+})
+
 router.post('/get_by_token/', (req, res) => {
     const key = req.body.SECURITY_KEY;
     if(key != SECURITY_KEY) res.status(403).json("Permission denied.")

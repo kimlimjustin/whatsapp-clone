@@ -91,6 +91,7 @@
 
 .options-mobile p{
     margin: 10px;
+    cursor: pointer;
 }
 
 .main-mobile{
@@ -125,3 +126,35 @@
     right: 45px;
     font-size: 60px;
 }
+
+.top-side-nav-right{
+    float: right;
+}
+
+.autocomplete {
+    position: relative;
+    display: inline-block;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #262d31; 
+    border-bottom: 1px solid #d4d4d4; 
+}
+
+.autocomplete-active {
+    background-color: #262d31; 
+    color: #ffffff; 
+  }
