@@ -46,7 +46,7 @@ router.post('/register', jsonParser, (req, res) => {
         else if(user) res.status(400).json("Email has been token.")
         else{
                 const token = generateToken();
-                const newUser = new User({name, password, email, token, friends: []});
+                const newUser = new User({name, password, email, token});
                 newUser.save()
                 .then(() => {
                     res.json({"Message": "Success", token});

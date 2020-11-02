@@ -29,9 +29,14 @@
 }
 
 .sidenav-pp{
+    margin: 5px;
     max-width: 1.5rem;
     border-radius: 50%;
     cursor: pointer;
+}
+
+.sidenav-pp-right{
+    float: right;
 }
 
 .profile-content{

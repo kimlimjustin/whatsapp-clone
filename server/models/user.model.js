@@ -25,7 +25,7 @@ const UserSchema = new Schema({
         unique: true,
         required: true
     },
-    friends: {
+    communications: {
         type: Array,
         required: false
     }

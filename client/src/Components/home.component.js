@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Cookies from 'universal-cookie';
 import getUserByToken from '../Library/getUserByToken';
-import Profile from "../Icons/profile.png"
+import Profile from "../Icons/profile.png";
+import Logout from "../Icons/logout.png";
 import Axios from 'axios';
 import URL from '../Static/Backend.url.static';
 
@@ -46,11 +47,18 @@ const Home = () => {
         .catch(() => setError("Someone has taken the email."))
     }
 
+    const LogoutUser = () => {
+        const cookie = new Cookies();
+        cookie.remove('token', {path: '/'});
+        window.location = "/login";
+    }
+
     return(
         <div className = "container-fluid">
             <div className="sidenav">
                 <div className="top-side-nav">
-                    <img src = {Profile} className="sidenav-pp" alt="Navigation bar" onClick = {() => openProfileContent()} />
+                    <img src = {Profile} className="sidenav-pp" alt="Navigation bar" onClick = {() => openProfileContent()} title="Profile" />
+                    <img src = {Logout} className="sidenav-pp" alt="Navigation bar logout icon" title = "Logout" onClick = {() => LogoutUser()} />
                     <div className="profile-content" id="profile-content">
                         <div className="margin-left-right text-light">
                             <span className="closebtn" onClick = {() => closeProfileContent()}>&times;</span>
