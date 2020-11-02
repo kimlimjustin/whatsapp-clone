@@ -35,9 +35,6 @@
     cursor: pointer;
 }
 
-.sidenav-pp-right{
-    float: right;
-}
 
 .profile-content{
     height: 100vh;
@@ -58,4 +55,73 @@
     font-size: 36px;
     margin-left: 50px;
     cursor: pointer;
+}
+
+.topnav-mobile{
+    background-color: #3e474d;
+    padding: 10px;
+}
+
+.topnav-mobile-title{
+    font-family: "Roboto Condensed";
+    margin: 0;
+    color: whitesmoke;
+}
+
+.topnav-mobile-options{
+    float: right;
+}
+
+.options-mobile{
+    padding: 10px;
+    position: absolute;
+    width: 80px;
+    background-color: white;
+    right: 0px;
+    left: auto;
+    display: none;
+    z-index: 3;
+    top: 0
+}
+
+.options-dropdown{
+    float: right;
+    overflow: hidden;
+}
+
+.options-mobile p{
+    margin: 10px;
+}
+
+.main-mobile{
+    background-color: #262d31;
+    padding: 10px;
+    height: 100vh
+}
+
+.mobile-overlay{
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 4;
+    top: 0;
+    left: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.9);
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+.mobile-overlay-content{
+    position: relative;
+    top: 25%;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.mobile-overlay-closeBtn{
+    position: absolute;
+    top: 20px;
+    right: 45px;
+    font-size: 60px;
 }
