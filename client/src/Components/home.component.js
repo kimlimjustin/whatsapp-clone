@@ -9,6 +9,7 @@ import URL from '../Static/Backend.url.static';
 import getAllUser from '../Library/getAllUser';
 import queryString from 'query-string';
 import io from 'socket.io-client';
+import getUserById from '../Library/getUserById';
 
 let socket;
 const Home = ({location}) => {
@@ -19,6 +20,7 @@ const Home = ({location}) => {
     const [width, setWidth] = useState(0);
     const [users, setUsers] = useState([]);
     const [target, setTarget] = useState('');
+    const [friends, setFriends] = useState({});
     const [inputEmail, setInputEmail] = useState('');
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
@@ -27,14 +29,16 @@ const Home = ({location}) => {
     const startMessagingContent = document.querySelector("#start-messaging-content");
 
     useEffect(() => {
-        const { to } = queryString.parse(location.search);
-        socket = io(URL);
+        if(location.search && userInfo._id){
+            const { to } = queryString.parse(location.search);
+            socket = io(URL);
 
-        setTarget(to);
-        const token = new Cookies().get('token');
-        socket.emit('startMessage', {sender: userInfo._id, recipient: to, token})
+            setTarget(to);
+            const token = new Cookies().get('token');
+            socket.emit('startMessage', {sender: userInfo._id, recipient: target, token})
+        }
         
-    }, [location.search, userInfo])
+    }, [location.search, userInfo, target])
 
     useEffect(() => {
         const token = new Cookies().get('token');
@@ -58,8 +62,8 @@ const Home = ({location}) => {
     useEffect(() => {
         setWidth(window.innerWidth);
         window.addEventListener('resize', () => {
-            setWidth(window.innerWidth);
             window.location.reload();
+            setWidth(window.innerWidth);
         });
     }, [])
 
@@ -119,7 +123,6 @@ const Home = ({location}) => {
     }
 
     const Autocomplete = (inp, arr) =>{
-        console.log(arr)
         var currentFocus;
         inp.addEventListener("input", function(e) {
             var a, b, i, val = this.value;
@@ -195,7 +198,17 @@ const Home = ({location}) => {
             Autocomplete(document.querySelector("#input-email"), users)
     }, [users])
 
-    useEffect(() => console.log(users), [users])
+    useEffect(() => {
+        if(userInfo.communications){
+            userInfo.communications.forEach(user => {
+                getUserById(user).then(result => {
+                    setFriends(friends => ({...friends, [user]: result}))
+                })
+            })
+        }
+    }, [userInfo])
+
+    useEffect(() => console.log(friends), [friends])
 
     return(
         <div className = "container-fluid">
@@ -253,14 +266,23 @@ const Home = ({location}) => {
                             </div>
                         </div>
                     </div>
+                    <div className="margin-top-bottom">
+                        {userInfo.communications && userInfo.communications.map(user => {
+                            return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`}>
+                                <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
+                                <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
+                            </div>
+                        })}
+                    </div>
                 </div>
                 <div className="main">
 
                 </div>
             </div>
+            /*Mobile*/
             :<div>
                 <div className="topnav-mobile">
-                    <span className='topnav-mobile-title'>Whatsapp clone</span>
+                    <span className='topnav-mobile-title' onClick = {() => window.location = "/"}>Whatsapp clone</span>
                     <div className="options-dropdown">
                         <img src = {Options} className="topnav-mobile-options sidenav-pp" alt="navigation bar options" onClick = {() => openOptionsMobile()} />
                         <div className="options-mobile" id="options-content">
@@ -292,6 +314,12 @@ const Home = ({location}) => {
                     </div>
                 </div>
                 <div className="main-mobile">
+                    {userInfo.communications && userInfo.communications.map(user => {
+                        return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`}>
+                            <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
+                            <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
+                        </div>
+                    })}
                 </div>
             </div>}
         </div>

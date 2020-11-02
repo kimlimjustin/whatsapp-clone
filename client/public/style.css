@@ -96,7 +96,6 @@
 
 .main-mobile{
     background-color: #262d31;
-    padding: 10px;
     height: 100vh
 }
 
@@ -157,4 +156,26 @@
 .autocomplete-active {
     background-color: #262d31; 
     color: #ffffff; 
-  }
+}
+
+.sidenav-user{
+    border: 1px solid #242d32;
+    width: 100%;
+    overflow: hidden;
+    background-color: #131c21;
+    cursor: pointer;
+}
+
+.usernav-name{
+    padding: 10px 0 0 10px;
+    margin: 0;
+    color: #d4d4d4;
+    font-family: "Poppins";
+}
+
+.usernav-email{
+    padding: 0 10px 10px 10px;
+    margin: 0;
+    color: #d4d4d4;
+    font-family: "Roboto condensed";
+}

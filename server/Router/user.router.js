@@ -47,12 +47,12 @@ router.post('/get_by_token/', (req, res) => {
     })
 }})
 
-router.get('/get_by_id/:id', (req, res) => {
-    if(!req.query.key) res.status(403).json("Permission denied.")
+router.post('/get_by_id/', (req, res) => {
+    if(!req.body.key) res.status(403).json("Permission denied.")
     else{
         const key = req.body.key;
         if(key != SECURITY_KEY) res.status(403).json("Permission denied.")
-        User.findById(req.params.id)
+        User.findById(req.body.id)
         .then(user => res.json(user))
         .catch(err => res.status(500).json("Error: "+err));
     }
