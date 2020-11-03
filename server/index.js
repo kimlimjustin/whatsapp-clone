@@ -26,9 +26,21 @@ const connection = mongoose.connection;
 connection.once('open', () => {
     console.log("MongoDB database connection established successfully");
 })
-
+const {addUser, removeUser, getUser, users} = require('./Router/onlineUsers');
 io.on('connection', socket => {
-    //console.log('a user connected.')
-    //socket.on('disconnect', () => console.log('a user disconnected.'))
-    socket.on('startMessage', ({sender, recipient, token}) => startMessage(sender, token, recipient))
+    
+    socket.on('disconnect', () => {
+        removeUser(socket.id);
+    })
+
+    socket.on('startMessage', ({sender, recipient, token, senderEmail}) => {
+        startMessage(sender, token, recipient);
+        addUser({id: socket.id, email: senderEmail})
+    })
+
+    socket.on('sendMessage', ({sender, recipient, token, message}) => {
+        const user = getUser(recipient)
+        
+        socket.to(user.id).emit("message", message)
+    })
 })

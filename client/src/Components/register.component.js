@@ -33,7 +33,7 @@ const Register = () => {
                 token.set('token', res.data.token, {path: '/', maxAge:604800 })
                 window.location = "/";
             })
-            .catch(err => setError(err.response.data.message));
+            .catch(err => {setError(err.response.data.message); console.log(err.response)});
         }
     }
 

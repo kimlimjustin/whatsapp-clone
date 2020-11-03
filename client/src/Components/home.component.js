@@ -22,11 +22,14 @@ const Home = ({location}) => {
     const [target, setTarget] = useState('');
     const [friends, setFriends] = useState({});
     const [inputEmail, setInputEmail] = useState('');
+    const [inputMessage, setInputMessage] = useState('');
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
     const overlayContent = document.querySelector("#overlay-content");
     const messageContent = document.querySelector("#startMessage-content");
+    const messageContentMobile = document.querySelector("#startMessage-content-mobile");
     const startMessagingContent = document.querySelector("#start-messaging-content");
+    const startMessagingContentMobile = document.querySelector("#start-messaging-content-mobile");
 
     useEffect(() => {
         if(location.search && userInfo._id){
@@ -35,7 +38,9 @@ const Home = ({location}) => {
 
             setTarget(to);
             const token = new Cookies().get('token');
-            socket.emit('startMessage', {sender: userInfo._id, recipient: target, token})
+            socket.emit('startMessage', {sender: userInfo._id, recipient: target, token, senderEmail: userInfo.email})
+
+            socket.on('message', (message) => console.log(message))
         }
         
     }, [location.search, userInfo, target])
@@ -187,6 +192,19 @@ const Home = ({location}) => {
             closeAllLists(e.target);
         });
     }
+    const StartMessageMobile = () => {
+        if(messageContentMobile) messageContentMobile.style.display = "block";
+    }
+    const closeMessageMobile = () => {
+        if(messageContentMobile) messageContentMobile.style.display = "none";
+    }
+    const startMessagingMobile = () => {
+        if(startMessagingContentMobile) startMessagingContentMobile.style.width = "100%";
+        closeMessageMobile();
+    }
+    const closeStartMessagingMobile = () => {
+        if(startMessagingContentMobile) startMessagingContentMobile.style.width = "0";
+    }
 
     const startChatting = e => {
         e.preventDefault();
@@ -209,6 +227,13 @@ const Home = ({location}) => {
     }, [userInfo])
 
 
+    const sendMessage = e => {
+        e.preventDefault();
+        const token = new Cookies().get('token')
+        socket.emit('sendMessage', {token, sender: userInfo._id, recipient: target, message: inputMessage, senderEmail: userInfo.email})
+        setInputMessage('')
+    }
+
     return(
         <div className = "container-fluid">
             {width > 900 ?
@@ -224,7 +249,7 @@ const Home = ({location}) => {
                         </div>
                         <img src = {Profile} className="sidenav-pp" alt="Navigation bar" onClick = {() => openProfileContent()} title="Profile" />
                         <div className="options-dropdown">
-                            <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => startMessage()} title="Profile" />
+                            <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => startMessage()} title="Start Message" />
                             <div className="options-mobile" id="startMessage-content">
                                 <p onClick = {() => startMessaging()}>Start message</p>
                                 <p>Create group</p>
@@ -282,14 +307,14 @@ const Home = ({location}) => {
                     <div className="messages-mobile">
                         
                     </div>
-                    <div className="inputChat">
+                    <form className="inputChat" onSubmit = {sendMessage}>
                         <div className="input-chat">
-                            <input type = "text" className="form-control" />
+                            <input type = "text" className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
                         </div>
                         <div className="send-chat">
-                            <input type ="submit"  className="send-message-button"/>            
+                            <input type ="submit" value="Send" className="send-message-button" />
                         </div>
-                    </div>
+                    </form>
                 </div>:
                 <div className="main">
                 
@@ -304,6 +329,16 @@ const Home = ({location}) => {
                     }
                     <div className="options-dropdown">
                         <img src = {Options} className="topnav-mobile-options sidenav-pp" alt="navigation bar options" onClick = {() => openOptionsMobile()} />
+                        {!target?
+                        <span>
+                        <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => StartMessageMobile()} title="Start Message" />
+                        <div className="options-mobile" id="startMessage-content-mobile">
+                            <p onClick = {() => startMessagingMobile()}>Start message</p>
+                            <p>Create group</p>
+                            <p onClick = {() => closeMessageMobile()}>Cancel</p>
+                        </div>
+                        </span>
+                        :null}
                         <div className="options-mobile" id="options-content">
                             <p onClick = {() => openOverlayMobile()}>Profile</p>
                             <p onClick = {() => LogoutUser()}>Logout</p>
@@ -331,6 +366,19 @@ const Home = ({location}) => {
                             </form>
                         </div>
                     </div>
+                    <div className="mobile-overlay" id="start-messaging-content-mobile">
+                        <form className="margin-left-right text-light" onSubmit = {startChatting}>
+                            <span className="closebtn" onClick = {() => closeStartMessagingMobile()}>&times;</span>
+                            <h1 className="box-title">Start messaging</h1>
+                            <div className="form-group autocomplete" style={{display: "block"}}>
+                                <p className="form-label">Email:</p>
+                                <input type = "text" className="form-control" id="input-email" value={inputEmail} onChange = {({target: {value}}) => setInputEmail(value)} />
+                            </div>
+                            <div className="form-group">
+                                <input type = "submit" className="form-control btn btn-light" value="Chat!" />
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 {!target?
                 <div className="main-mobile">
@@ -346,14 +394,14 @@ const Home = ({location}) => {
                     <div className="messages-mobile">
                         
                     </div>
-                    <div className="inputChat-mobile">
+                    <form className="inputChat-mobile" onSubmit = {sendMessage}>
                         <div className="input-chat-mobile">
-                            <input type = "text" className="form-control" />
+                            <input type = "text" className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
                         </div>
                         <div className="send-chat-mobile">
-                            <input type ="submit"  className="send-message-button"/>            
+                            <input type ="submit"  className="send-message-button" value="Send" />            
                         </div>
-                    </div>
+                    </form>
                 </div>}
             </div>}
         </div>
