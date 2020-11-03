@@ -279,7 +279,7 @@ const Home = ({location}) => {
                     <div className="user-info">
                         <h3 className="usernav-name">{target}</h3>
                     </div>
-                    <div className="messages">
+                    <div className="messages-mobile">
                         
                     </div>
                     <div className="inputChat">
@@ -298,7 +298,10 @@ const Home = ({location}) => {
             /*Mobile*/
             :<div>
                 <div className="topnav-mobile">
+                    {!target?
                     <span className='topnav-mobile-title' onClick = {() => window.location = "/"}>Whatsapp clone</span>
+                    :<span><span className='topnav-mobile-title' onClick = {() => window.location = "/"}>&lt;-&#9;</span><span className="usernav-email">{target}</span></span>
+                    }
                     <div className="options-dropdown">
                         <img src = {Options} className="topnav-mobile-options sidenav-pp" alt="navigation bar options" onClick = {() => openOptionsMobile()} />
                         <div className="options-mobile" id="options-content">
@@ -329,6 +332,7 @@ const Home = ({location}) => {
                         </div>
                     </div>
                 </div>
+                {!target?
                 <div className="main-mobile">
                     {userInfo.communications && userInfo.communications.map(user => {
                         return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
@@ -337,6 +341,20 @@ const Home = ({location}) => {
                         </div>
                     })}
                 </div>
+                :
+                <div className="main-mobile-chat">
+                    <div className="messages-mobile">
+                        
+                    </div>
+                    <div className="inputChat-mobile">
+                        <div className="input-chat-mobile">
+                            <input type = "text" className="form-control" />
+                        </div>
+                        <div className="send-chat-mobile">
+                            <input type ="submit"  className="send-message-button"/>            
+                        </div>
+                    </div>
+                </div>}
             </div>}
         </div>
     )

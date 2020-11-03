@@ -108,7 +108,7 @@
 
 .main-mobile{
     background-color: #262d31;
-    height: 100vh
+    height: calc(100vh - 35px);
 }
 
 .mobile-overlay{
@@ -222,4 +222,34 @@
     color: white;
     padding: 8px;
     border-radius: 10px;
+}
+
+.main-mobile-chat{
+    background-color: #0d1418;
+    height: calc(100vh - 39px);
+}
+
+.user-info-mobile{
+    background-color: #2a2f38;
+}
+
+.inputChat-mobile{
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+
+.input-chat-mobile{
+    width: calc(75%);
+    float: left;
+}
+
+.send-chat-mobile{
+    float: left;
+    width: 25%;
+    
+}
+.messages-mobile{
+    height: -webkit-fill-available;
+    overflow-y: scroll;
 }
