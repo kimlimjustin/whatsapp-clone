@@ -208,7 +208,6 @@ const Home = ({location}) => {
         }
     }, [userInfo])
 
-    useEffect(() => console.log(friends), [friends])
 
     return(
         <div className = "container-fluid">
@@ -268,16 +267,33 @@ const Home = ({location}) => {
                     </div>
                     <div className="margin-top-bottom">
                         {userInfo.communications && userInfo.communications.map(user => {
-                            return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`}>
+                            return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
                                 <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                                 <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                             </div>
                         })}
                     </div>
                 </div>
+                {target?
                 <div className="main">
-
-                </div>
+                    <div className="user-info">
+                        <h3 className="usernav-name">{target}</h3>
+                    </div>
+                    <div className="messages">
+                        
+                    </div>
+                    <div className="inputChat">
+                        <div className="input-chat">
+                            <input type = "text" className="form-control" />
+                        </div>
+                        <div className="send-chat">
+                            <input type ="submit"  className="send-message-button"/>            
+                        </div>
+                    </div>
+                </div>:
+                <div className="main">
+                
+                </div>}
             </div>
             /*Mobile*/
             :<div>
@@ -315,7 +331,7 @@ const Home = ({location}) => {
                 </div>
                 <div className="main-mobile">
                     {userInfo.communications && userInfo.communications.map(user => {
-                        return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`}>
+                        return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
                             <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                             <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                         </div>

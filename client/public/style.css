@@ -16,11 +16,23 @@
     background-color: #2a2f32;
 }
 
+.sidenav::-webkit-scrollbar{width: 10px;}
+
 .main{
     margin-left: 25%;
-    padding: 10px;
     height: 100vh;
+    background-color: #0d1418;
+}
+
+.main::-webkit-scrollbar{display: none;}
+
+.user-info{
+    position: absolute;
+    top: 0;
+    width: calc(75% - 20px);
     background-color: #262d31;
+    color: white;
+    padding: 10px;
 }
 
 .top-side-nav{
@@ -178,4 +190,36 @@
     margin: 0;
     color: #d4d4d4;
     font-family: "Roboto condensed";
+}
+
+.messages{
+    height: -webkit-fill-available;
+    overflow-y: scroll;
+}
+.messages::-webkit-scrollbar{width: 10px;}
+
+.inputChat{
+    position: absolute;
+    bottom: 0px;
+    width: calc(75% - 10px);
+    padding: 5px;
+}
+
+.input-chat{
+    width: 85%;
+    float: left;
+}
+
+.send-chat{
+    float: left;
+    width: 15%;
+    
+}
+
+.send-message-button{
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 8px;
+    border-radius: 10px;
 }
