@@ -4,28 +4,38 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 const User = require('../models/user.model');
 const Message = require('../models/message.model');
+const crypto = require('crypto');
 
 require('dotenv').config();
 const SECURITY_KEY = process.env.SECURITY_KEY;
 
-const generateToken = () => {
-    const randomToken = require('random-token').create(SECURITY_KEY);
-    return randomToken(50);
+const encrypt = (message) => {
+    const key = crypto.randomBytes(32);
+    const iv = crypto.randomBytes(16);
+    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let encrypted = cipher.update(message);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return {iv: iv.toString('hex'), encryptedMessage: encrypted.toString('hex'), key: key.toString('hex')}
 }
 
+
 const createMessage = async (sender, userToken, recipient, message) => {
-    User.findOne({_id: sender, userToken}, async (err, user) => {
+    User.findOne({_id: sender, token:userToken}, async (err, user) => {
         if(err) return null;
         else if(!user) return null;
         else{
-            User.findOne({email: recipient}, async (err, user) => {
+            User.findOne({email: recipient}, async (err, _user) => {
                 if(err) return null;
-                else if(!user) return null;
+                else if(!_user) return null;
                 else{
-                    const token = generateToken();
-                    const _message = new Message({recipient, sender, token, message})
+                    if(!_user.communications.includes(sender)) _user.communications.push(sender)
+                    const encryptedMessage = encrypt(message);
+                    const _message = new Message({recipient: _user._id, sender, iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key})
                     await _message.save()
-                    .then(() => {return true})
+                    .then(() => {return {
+                        recipient: {email: _user.email, id: _user._id}, sender: {email: _user.email, id: _user._id},
+                        iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key}
+                    })
                     .catch(() => {return null;})
                 }
             })

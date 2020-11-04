@@ -11,7 +11,15 @@ const MessageSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    token: {
+    iv: {
+        type: String,
+        required: true
+    },
+    message: {
+        type: String,
+        required: true
+    },
+    key: {
         type: String,
         required: true
     }

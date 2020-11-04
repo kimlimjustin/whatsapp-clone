@@ -10,6 +10,7 @@ import getAllUser from '../Library/getAllUser';
 import queryString from 'query-string';
 import io from 'socket.io-client';
 import getUserById from '../Library/getUserById';
+import crypto from "crypto-js";
 
 let socket;
 const Home = ({location}) => {
@@ -23,6 +24,7 @@ const Home = ({location}) => {
     const [friends, setFriends] = useState({});
     const [inputEmail, setInputEmail] = useState('');
     const [inputMessage, setInputMessage] = useState('');
+    const [messages, setMessages] = useState([]);
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
     const overlayContent = document.querySelector("#overlay-content");
@@ -40,7 +42,7 @@ const Home = ({location}) => {
             const token = new Cookies().get('token');
             socket.emit('startMessage', {sender: userInfo._id, recipient: target, token, senderEmail: userInfo.email})
 
-            socket.on('message', (message) => console.log(message))
+            socket.on('message', (message) => setMessages(_messages => [..._messages, message]))
         }
         
     }, [location.search, userInfo, target])
@@ -146,6 +148,7 @@ const Home = ({location}) => {
                     b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                     b.addEventListener("click", function(e) {
                         inp.value = this.getElementsByTagName("input")[0].value;
+                        setInputEmail(this.getElementsByTagName("input")[0].value);
                         closeAllLists();
                     });
                     a.appendChild(b);
@@ -226,12 +229,25 @@ const Home = ({location}) => {
         }
     }, [userInfo])
 
-
     const sendMessage = e => {
         e.preventDefault();
         const token = new Cookies().get('token')
         socket.emit('sendMessage', {token, sender: userInfo._id, recipient: target, message: inputMessage, senderEmail: userInfo.email})
         setInputMessage('')
+        setMessages(messages => [...messages, {message: inputMessage, sender: userInfo._id}])
+    }
+
+    useEffect(() => console.log(messages), [messages])
+
+    const decryptMessage = (key, message, iv) => {
+        let _key = crypto.enc.Hex.parse(key);
+        const result = crypto.AES.decrypt(message, _key, {
+            iv: crypto.enc.Hex.parse(iv) ,
+            mode: crypto.mode.CBC,
+            format: crypto.format.Hex
+        }).toString(crypto.enc.Utf8)
+        
+        return result
     }
 
     return(
@@ -325,7 +341,8 @@ const Home = ({location}) => {
                 <div className="topnav-mobile">
                     {!target?
                     <span className='topnav-mobile-title' onClick = {() => window.location = "/"}>Whatsapp clone</span>
-                    :<span><span className='topnav-mobile-title' onClick = {() => window.location = "/"}>&lt;-&#9;</span><span className="usernav-email">{target}</span></span>
+                    :<span><span className='topnav-mobile-title' onClick = {() => window.location = "/"} style={{cursor: "pointer"}}>&lt;-&#9;</span>
+                    <span className="usernav-email">{target}</span></span>
                     }
                     <div className="options-dropdown">
                         <img src = {Options} className="topnav-mobile-options sidenav-pp" alt="navigation bar options" onClick = {() => openOptionsMobile()} />

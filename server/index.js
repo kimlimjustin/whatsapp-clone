@@ -40,7 +40,9 @@ io.on('connection', socket => {
 
     socket.on('sendMessage', ({sender, recipient, token, message}) => {
         const user = getUser(recipient)
-        
-        socket.to(user.id).emit("message", message)
+        createMessage(sender, token, recipient, message)
+        //.then()
+        socket.emit('message', "HELLO")
+        if(user) socket.to(user.id).emit("message", {sender, message})
     })
 })
