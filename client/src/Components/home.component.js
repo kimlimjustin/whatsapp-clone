@@ -40,12 +40,15 @@ const Home = ({location}) => {
 
             setTarget(to);
             const token = new Cookies().get('token');
-            socket.emit('startMessage', {sender: userInfo._id, recipient: target, token, senderEmail: userInfo.email})
+            socket.emit('startMessage', {sender: userInfo._id, recipient: to, token, senderEmail: userInfo.email})
 
-            socket.on('message', (message) => setMessages(_messages => [..._messages, message]))
+            socket.on('message', (message) => {
+                if((message.recipient.email === to && message.sender.id === userInfo._id)
+                    || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
+            })
         }
         
-    }, [location.search, userInfo, target])
+    }, [location.search, userInfo])
 
     useEffect(() => {
         const token = new Cookies().get('token');
@@ -320,7 +323,9 @@ const Home = ({location}) => {
                         <h3 className="usernav-name">{target}</h3>
                     </div>
                     <div className="messages-mobile">
-                        
+                        {messages.map(message => {
+                            return null;
+                        })}
                     </div>
                     <form className="inputChat" onSubmit = {sendMessage}>
                         <div className="input-chat">
