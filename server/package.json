@@ -18,6 +18,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mongoose": "^5.10.11",
+    "querystring": "^0.2.0",
     "random-token": "0.0.8",
     "socket.io": "^2.3.0"
   }

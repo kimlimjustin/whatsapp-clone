@@ -234,7 +234,6 @@ const Home = ({location}) => {
         const token = new Cookies().get('token')
         socket.emit('sendMessage', {token, sender: userInfo._id, recipient: target, message: inputMessage, senderEmail: userInfo.email})
         setInputMessage('')
-        setMessages(messages => [...messages, {message: inputMessage, sender: userInfo._id}])
     }
 
     useEffect(() => console.log(messages), [messages])

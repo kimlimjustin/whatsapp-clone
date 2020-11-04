@@ -20,27 +20,24 @@ const encrypt = (message) => {
 
 
 const createMessage = async (sender, userToken, recipient, message) => {
-    User.findOne({_id: sender, token:userToken}, async (err, user) => {
-        if(err) return null;
-        else if(!user) return null;
-        else{
-            User.findOne({email: recipient}, async (err, _user) => {
-                if(err) return null;
-                else if(!_user) return null;
-                else{
-                    if(!_user.communications.includes(sender)) _user.communications.push(sender)
-                    const encryptedMessage = encrypt(message);
-                    const _message = new Message({recipient: _user._id, sender, iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key})
-                    await _message.save()
-                    .then(() => {return {
-                        recipient: {email: _user.email, id: _user._id}, sender: {email: _user.email, id: _user._id},
-                        iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key}
-                    })
-                    .catch(() => {return null;})
+    let _info = null;
+    await User.findOne({_id: sender, token: userToken})
+    .then(async user => {
+        if(user) await User.findOne({email: recipient})
+        .then(_user => {
+            if(_user){
+                if(!_user.communications.includes(sender)) _user.communications.push(sender)
+                const encryptedMessage = encrypt(message);
+                const _message = new Message({recipient: _user._id, sender, iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key})
+                _message.save()
+                _info = {
+                    recipient: {email: _user.email, id: _user._id}, sender: {email: _user.email, id: _user._id},
+                    iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key
                 }
-            })
-        }
+            }
+        })
     })
+    return _info;
 }
 
 const startMessage = async (sender, userToken, recipient) => {
