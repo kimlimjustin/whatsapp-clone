@@ -195,6 +195,7 @@
 .messages{
     height: -webkit-fill-available;
     overflow-y: scroll;
+    padding-top: 59px;
 }
 .messages::-webkit-scrollbar{width: 10px;}
 
@@ -252,4 +253,35 @@
 .messages-mobile{
     height: -webkit-fill-available;
     overflow-y: scroll;
+}
+
+.messageContainer{
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 5%;
+    margin-top: 3px;
+    color: #d4d4d4;
+}
+
+.receivedMessage{
+    justify-content: flex-start;
+}
+
+.sentMessage{
+    justify-content: flex-end;
+}
+
+.messageBox-receive{
+    background-color: #262d31;
+}
+
+.messageBox-sent{
+    background-color: #054740;
+}
+
+.messageBox{
+    border-radius: 20px;   
+    padding: 5px 20px;
+    display: inline-block;
+    max-width: 80%;
 }

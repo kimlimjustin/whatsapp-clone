@@ -26,7 +26,10 @@ const createMessage = async (sender, userToken, recipient, message) => {
         if(user) await User.findOne({email: recipient})
         .then(_user => {
             if(_user){
-                if(!_user.communications.includes(sender)) _user.communications.push(sender)
+                if(!_user.communications.includes(sender)){
+                    _user.communications.push(sender);
+                    _user.save();
+                }
                 const encryptedMessage = encrypt(message);
                 const _message = new Message({recipient: _user._id, sender, iv: encryptedMessage.iv, message: encryptedMessage.encryptedMessage, key: encryptedMessage.key})
                 _message.save()
@@ -49,7 +52,7 @@ const startMessage = async (sender, userToken, recipient) => {
                 if(err) return null;
                 else if(!_user) return null;
                 else{
-                    if(!user.communications.includes(_user._id)){
+                    if(!user.communications.includes(_user._id) && sender !== recipient){
                         user.communications.push(_user._id)
                         await user.save()
                         .then(() => {return true})
@@ -71,17 +74,35 @@ router.post('/get_messages', jsonParser, (req, res) => {
                 if(err) res.status(500).json("Something went wrong.");
                 else if(!user) res.status(403).json("Permission denied.")
                 else{
-                    Message.find({sender: user, recipient: _user._id}, (err, message) => {
-                        if(err) res.status(500).json("Something went wrong.");
-                        else{
-                            Message.find({sender: _user._id, recipient: user}, (err, _message) => {
-                                if(err) res.status(500).json("Something went wrong.");
-                                else{
-                                    res.json(message.concat(_message))
-                                }
-                            })
-                        }
+                    Message.find({sender: user, recipient: _user._id})
+                    .then(message => {
+                        Message.find({sender: _user._id, recipient: user}, (err, _message) => {
+                            if(err) res.status(500).json("Something went wrong.");
+                            else{
+                                let result = message.concat(_message)
+                                result.sort((a, b) => { 
+                                    return new Date(a.createdAt) - new Date(b.createdAt)
+                                });
+                                let finalResult = []
+                                result.forEach(msg => {
+                                    if(String(msg.sender) === String(user._id)){
+                                        _info = {
+                                            recipient: {email: _user.email, id: _user._id}, sender: {email: user.email, id: user._id},
+                                            iv: msg.iv, message: msg.message, key: msg.key
+                                        }
+                                    }else{
+                                        _info = {
+                                            recipient: {email: user.email, id: user._id}, sender: {email: _user.email, id: _user._id},
+                                            iv: msg.iv, message: msg.message, key: msg.key
+                                        }
+                                    }
+                                    finalResult.push(_info)
+                                })
+                                res.json(finalResult)
+                            }
+                        })
                     })
+                    .catch(() => {res.status(500).json("Something went wrong.");})
                 }
             })
         }

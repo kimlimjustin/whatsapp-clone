@@ -53,6 +53,11 @@ const Home = ({location}) => {
             socket.on('message', (message) => {
                 if((message.recipient.email === to && message.sender.id === userInfo._id)
                     || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
+                else{
+                    getUserById(message.sender.id).then(result => {
+                        setFriends(ex => ({...ex, [message.sender.id]: result}))
+                    })
+                }
             })
         }
         
@@ -88,8 +93,10 @@ const Home = ({location}) => {
     useEffect(() => {
         const token = new Cookies().get('token')
         getAllUser(token)
-        .then(result => setUsers(result))
-    }, [])
+        .then(result => {
+            setUsers(result.filter(res => res !== userInfo.email))
+        })
+    }, [userInfo.email])
 
     const openProfileContent = () => profileContent.style.width = "25%";
     const closeProfileContent = () => profileContent.style.width = "0";
@@ -332,10 +339,18 @@ const Home = ({location}) => {
                     </div>
                     <div className="messages">
                         {messages.map(message => {
-                            if(message.sender.id === userInfo._id){
-                                return null;
+                            if(String(message.sender.id) === String(userInfo._id)){
+                                return <div className="messageContainer sentMessage" key = {message.iv}>
+                                    <div className="messageBox messageBox-sent">
+                                        <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                    </div>
+                                </div>
                             }else{
-                                return null;
+                                return <div className="messageContainer receivedMessage" key = {message.iv}>
+                                    <div className="messageBox messageBox-receive">
+                                        <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                    </div>
+                                </div>
                             }
                         })}
                     </div>
