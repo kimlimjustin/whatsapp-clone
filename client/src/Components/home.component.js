@@ -267,6 +267,15 @@ const Home = ({location}) => {
         return result
     }
 
+    useEffect(() => {
+        var checkExist = setInterval(function() {
+            if (document.querySelector("#messages")) {
+               document.querySelector("#messages").scrollTop = document.querySelector("#messages").scrollHeight
+               clearInterval(checkExist);
+            }
+        }, 100)
+    })
+
     return(
         <div className = "container-fluid">
             {width > 900 ?
@@ -337,7 +346,7 @@ const Home = ({location}) => {
                     <div className="user-info">
                         <h3 className="usernav-name">{target}</h3>
                     </div>
-                    <div className="messages">
+                    <div className="messages" id="messages">
                         {messages.map(message => {
                             if(String(message.sender.id) === String(userInfo._id)){
                                 return <div className="messageContainer sentMessage" key = {message.iv}>

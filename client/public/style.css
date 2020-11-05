@@ -183,6 +183,7 @@
     margin: 0;
     color: #d4d4d4;
     font-family: "Poppins";
+    z-index: 8;
 }
 
 .usernav-email{
@@ -256,6 +257,7 @@
 .messages-mobile{
     height: -webkit-fill-available;
     overflow-y: scroll;
+    width: 100%;
     padding-bottom: 62px;
 }
 
@@ -287,7 +289,7 @@
     border-radius: 20px;   
     padding: 5px 20px;
     display: inline-block;
-    max-width: 80%;
+    max-width: 70%;
 }
 
 .messageText{
