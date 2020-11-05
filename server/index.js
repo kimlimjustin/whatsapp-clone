@@ -14,8 +14,9 @@ app.use(express.json())
 app.use(cors());
 
 const UserRouter = require('./Router/user.router');
-const {router, startMessage, createMessage} = require('./Router/message.router');
+const {messageRouter, startMessage, createMessage} = require('./Router/message.router');
 app.use('/users', UserRouter);
+app.use('/messages', messageRouter);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`))

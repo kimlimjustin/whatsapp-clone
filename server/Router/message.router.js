@@ -67,13 +67,19 @@ router.post('/get_messages', jsonParser, (req, res) => {
         if(err) res.status(500).json("Something went wrong.");
         else if(!user) res.status(403).json("Permission denied.")
         else{
-            Message.find({sender: user, recipient: target}, (err, message) => {
+            User.findOne({email: target}, (err, _user) => {
                 if(err) res.status(500).json("Something went wrong.");
+                else if(!user) res.status(403).json("Permission denied.")
                 else{
-                    Message.find({sender: target, recipient: user}, (err, _message) => {
+                    Message.find({sender: user, recipient: _user._id}, (err, message) => {
                         if(err) res.status(500).json("Something went wrong.");
                         else{
-                            res.json(message.concat(_message))
+                            Message.find({sender: _user._id, recipient: user}, (err, _message) => {
+                                if(err) res.status(500).json("Something went wrong.");
+                                else{
+                                    res.json(message.concat(_message))
+                                }
+                            })
                         }
                     })
                 }
@@ -82,4 +88,4 @@ router.post('/get_messages', jsonParser, (req, res) => {
     })
 })
 
-module.exports = {createMessage, router, startMessage}
+module.exports = {createMessage, messageRouter: router, startMessage}

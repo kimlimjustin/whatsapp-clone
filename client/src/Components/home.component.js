@@ -42,6 +42,14 @@ const Home = ({location}) => {
             const token = new Cookies().get('token');
             socket.emit('startMessage', {sender: userInfo._id, recipient: to, token, senderEmail: userInfo.email})
 
+            Axios.post(`${URL}/messages/get_messages`, {user: userInfo._id, token: userInfo.token, target: to})
+            .then(res => {
+                res.data.forEach(message => {
+                    setMessages(_messages => [..._messages, message])
+                })
+            })
+            .catch(err => console.log(err.response))
+
             socket.on('message', (message) => {
                 if((message.recipient.email === to && message.sender.id === userInfo._id)
                     || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
@@ -322,9 +330,13 @@ const Home = ({location}) => {
                     <div className="user-info">
                         <h3 className="usernav-name">{target}</h3>
                     </div>
-                    <div className="messages-mobile">
+                    <div className="messages">
                         {messages.map(message => {
-                            return null;
+                            if(message.sender.id === userInfo._id){
+                                return null;
+                            }else{
+                                return null;
+                            }
                         })}
                     </div>
                     <form className="inputChat" onSubmit = {sendMessage}>
