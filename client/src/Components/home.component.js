@@ -342,13 +342,16 @@ const Home = ({location}) => {
                             if(String(message.sender.id) === String(userInfo._id)){
                                 return <div className="messageContainer sentMessage" key = {message.iv}>
                                     <div className="messageBox messageBox-sent">
-                                        <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                        <p className="messageText">{decryptMessage(message.key, message.message, message.iv)}</p>
                                     </div>
                                 </div>
                             }else{
                                 return <div className="messageContainer receivedMessage" key = {message.iv}>
                                     <div className="messageBox messageBox-receive">
-                                        <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                        <div className="messageText">
+                                            <span className="sender-info link" onClick = {() => window.location = `/?to=${message.sender.email}`}>{message.sender.email}</span>
+                                            <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                        </div>
                                     </div>
                                 </div>
                             }
@@ -356,7 +359,7 @@ const Home = ({location}) => {
                     </div>
                     <form className="inputChat" onSubmit = {sendMessage}>
                         <div className="input-chat">
-                            <input type = "text" className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
+                            <textarea className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
                         </div>
                         <div className="send-chat">
                             <input type ="submit" value="Send" className="send-message-button" />
@@ -440,11 +443,30 @@ const Home = ({location}) => {
                 :
                 <div className="main-mobile-chat">
                     <div className="messages-mobile">
-                        
+                        {messages.map(message => {
+                            if(String(message.sender.id) === String(userInfo._id)){
+                                return <div className="messageContainer sentMessage" key = {message.iv}>
+                                    <div className="messageBox messageBox-sent">
+                                        <div className="messageText">
+                                            <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }else{
+                                return <div className="messageContainer receivedMessage" key = {message.iv}>
+                                    <div className="messageBox messageBox-receive">
+                                        <div className="messageText">
+                                            <span className="sender-info link" onClick = {() => window.location = `/?to=${message.sender.email}`}>{message.sender.email}</span>
+                                            <p>{decryptMessage(message.key, message.message, message.iv)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        })}
                     </div>
                     <form className="inputChat-mobile" onSubmit = {sendMessage}>
                         <div className="input-chat-mobile">
-                            <input type = "text" className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
+                            <textarea className="form-control" value={inputMessage} onChange = {({target: {value}}) => setInputMessage(value)} autoFocus />
                         </div>
                         <div className="send-chat-mobile">
                             <input type ="submit"  className="send-message-button" value="Send" />            

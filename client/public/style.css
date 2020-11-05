@@ -196,6 +196,7 @@
     height: -webkit-fill-available;
     overflow-y: scroll;
     padding-top: 59px;
+    padding-bottom: 62px;
 }
 .messages::-webkit-scrollbar{width: 10px;}
 
@@ -204,6 +205,7 @@
     bottom: 0px;
     width: calc(75% - 10px);
     padding: 5px;
+    background-color: #2a2f38;
 }
 
 .input-chat{
@@ -219,9 +221,9 @@
 
 .send-message-button{
     width: 100%;
-    background-color: black;
+    background-color: #131c21;
     color: white;
-    padding: 8px;
+    padding: 16px;
     border-radius: 10px;
 }
 
@@ -238,6 +240,7 @@
     position: absolute;
     bottom: 0px;
     width: 100%;
+    background-color: #2a2f38;
 }
 
 .input-chat-mobile{
@@ -253,6 +256,7 @@
 .messages-mobile{
     height: -webkit-fill-available;
     overflow-y: scroll;
+    padding-bottom: 62px;
 }
 
 .messageContainer{
@@ -284,4 +288,21 @@
     padding: 5px 20px;
     display: inline-block;
     max-width: 80%;
+}
+
+.messageText{
+    width: 100%;
+    letter-spacing: 0;
+    float: left;
+    font-size: 1.1em;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: "Roboto Condensed";
+}
+
+.sender-info{
+    margin: 0;
+    border-bottom: 1px solid #d4d4d4;
+    color: #d4d4d4 !important;
+    cursor: pointer;
 }
