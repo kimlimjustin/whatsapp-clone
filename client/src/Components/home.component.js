@@ -28,7 +28,7 @@ const Home = ({location}) => {
     const [messages, setMessages] = useState([]);
     const [inputGroupName, setInputGroupName] = useState('');
     const [inputGroupMembers, setInputMembers] = useState([]);
-    const [groups, setGroups] = useState([]);
+    const [groups, setGroups] = useState({});
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
     const overlayContent = document.querySelector("#overlay-content");
@@ -264,7 +264,7 @@ const Home = ({location}) => {
                 getUserById(user).then(result => {
                     if(result) setFriends(friends => ({...friends, [user]: result}))
                     else{
-                        getGroupById(user).then(result => setGroups(groups => [...groups, result]))
+                        getGroupById(user).then(result => setGroups(groups => ({...groups, [user]: result})))
                     }
                 })
             })
@@ -360,7 +360,7 @@ const Home = ({location}) => {
                                         else setInputMembers(inputGroupMembers.filter(member => member !== value))}} />
                                         <label htmlFor = {friends[user] && friends[user].email}>{friends[user] && friends[user].email}</label>
                                         </div>
-                                    }else return null; //not done
+                                    }else return null;
                                 })}
                                 <div className="form-group">
                                     <input type = "submit" className="form-control btn btn-dark" />
@@ -395,7 +395,12 @@ const Home = ({location}) => {
                                 <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                                 <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                             </div>
-                            }else return null; //not done
+                            }else if(user in groups){
+                                return <div key =  {user} className = "sidenav-user">
+                                <h2 className="usernav-name">{groups[user] && groups[user].name}</h2>
+                                <h5 className="usernav-email">{groups[user] && groups[user].member.length} {groups[user].member.length > 1?<span>members</span>:<span>member</span>}</h5>
+                                </div>
+                            }else return null;
                         })}
                     </div>
                 </div>
@@ -505,16 +510,37 @@ const Home = ({location}) => {
                                     <p className="form-label">Group name:</p>
                                     <input type = "text" className="form-control" />
                                 </div>
+                                <p className="form-group form-label">Members:</p>
+                                {userInfo.communications && userInfo.communications.map(user => {
+                                    if(user in friends){
+                                    return <div key = {user} className="form-group">
+                                        <input type = "checkbox" id={friends[user] && friends[user].email} value = {friends[user] && friends[user].email} 
+                                        onChange = {({target: {checked, value}}) => {if(checked) setInputMembers(prev => [...prev, value]);
+                                        else setInputMembers(inputGroupMembers.filter(member => member !== value))}} />
+                                        <label htmlFor = {friends[user] && friends[user].email}>{friends[user] && friends[user].email}</label>
+                                        </div>
+                                    }else return null;
+                                })}
+                                <div className="form-group">
+                                    <input type = "submit" className="form-control btn btn-dark" />
+                                </div>
                             </form>
                         </div>
                 </div>
                 {!target?
                 <div className="main-mobile">
                     {userInfo.communications && userInfo.communications.map(user => {
+                        if(user in friends){
                         return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
                             <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                             <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                         </div>
+                        }else if(user in groups){
+                            return <div key =  {user} className = "sidenav-user">
+                            <h2 className="usernav-name">{groups[user] && groups[user].name}</h2>
+                            <h5 className="usernav-email">{groups[user] && groups[user].member.length} {groups[user].member.length > 1?<span>members</span>:<span>member</span>}</h5>
+                            </div>
+                        }else return null;
                     })}
                 </div>
                 :
