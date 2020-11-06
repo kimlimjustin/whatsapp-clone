@@ -10,6 +10,7 @@ import queryString from 'query-string';
 import io from 'socket.io-client';
 import getUserById from '../Library/getUserById';
 import crypto from "crypto-js";
+import getGroupById from '../Library/getGroupById';
 
 let socket;
 const URL = process.env.REACT_APP_BACKEND_URL
@@ -25,6 +26,9 @@ const Home = ({location}) => {
     const [inputEmail, setInputEmail] = useState('');
     const [inputMessage, setInputMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [inputGroupName, setInputGroupName] = useState('');
+    const [inputGroupMembers, setInputMembers] = useState([]);
+    const [groups, setGroups] = useState([]);
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
     const overlayContent = document.querySelector("#overlay-content");
@@ -33,6 +37,7 @@ const Home = ({location}) => {
     const startMessagingContent = document.querySelector("#start-messaging-content");
     const startMessagingContentMobile = document.querySelector("#start-messaging-content-mobile");
     const createGroupContent = document.querySelector("#create-group-content");
+    const createGroupContentMobile = document.querySelector("#create-group-content-mobile");
 
     useEffect(() => {
         if(location.search && userInfo._id){
@@ -240,6 +245,13 @@ const Home = ({location}) => {
     const closeStartCreateGroup = () => {
         if(createGroupContent) createGroupContent.style.width = "0";
     }
+    const startCreateGroupMobile = () => {
+        if(createGroupContentMobile) createGroupContentMobile.style.width = "100%";
+        closeMessageMobile()
+    }
+    const closeStartCreateGroupMobile = () => {
+        if(createGroupContentMobile) createGroupContentMobile.style.width = "0";
+    }
 
     useEffect(() => {
         if(document.querySelector("#input-email") && users)
@@ -250,7 +262,10 @@ const Home = ({location}) => {
         if(userInfo.communications){
             userInfo.communications.forEach(user => {
                 getUserById(user).then(result => {
-                    setFriends(friends => ({...friends, [user]: result}))
+                    if(result) setFriends(friends => ({...friends, [user]: result}))
+                    else{
+                        getGroupById(user).then(result => setGroups(groups => [...groups, result]))
+                    }
                 })
             })
         }
@@ -284,6 +299,14 @@ const Home = ({location}) => {
             }
         }, 100)
     })
+
+    const createGroup = e => {
+        e.preventDefault();
+        const token = new Cookies().get('token');
+        Axios.post(`${URL}/group/create`, {member: inputGroupMembers, owner: userInfo._id, name: inputGroupName, token})
+        .then(res => console.log(res.data))
+        .catch(err => console.log(err.response))
+    }
 
     return(
         <div className = "container-fluid">
@@ -321,12 +344,26 @@ const Home = ({location}) => {
                             </form>
                         </div>
                         <div className="profile-content" id="create-group-content">
-                            <form className="margin-left-right text-light" onSubmit = {startChatting}>
+                            <form className="margin-left-right text-light" onSubmit = {createGroup}>
                                 <span className="closebtn" onClick = {() => closeStartCreateGroup()}>&times;</span>
                                 <h1 className="box-title">Create group</h1>
                                 <div className="form-group">
                                     <p className="form-label">Group name:</p>
-                                    <input type = "text" className="form-control" />
+                                    <input type = "text" className="form-control" value = {inputGroupName} onChange = {({target: {value}}) => setInputGroupName(value)} />
+                                </div>
+                                <p className="form-group form-label">Members:</p>
+                                {userInfo.communications && userInfo.communications.map(user => {
+                                    if(user in friends){
+                                    return <div key = {user} className="form-group">
+                                        <input type = "checkbox" id={friends[user] && friends[user].email} value = {friends[user] && friends[user].email} 
+                                        onChange = {({target: {checked, value}}) => {if(checked) setInputMembers(prev => [...prev, value]);
+                                        else setInputMembers(inputGroupMembers.filter(member => member !== value))}} />
+                                        <label htmlFor = {friends[user] && friends[user].email}>{friends[user] && friends[user].email}</label>
+                                        </div>
+                                    }else return null; //not done
+                                })}
+                                <div className="form-group">
+                                    <input type = "submit" className="form-control btn btn-dark" />
                                 </div>
                             </form>
                         </div>
@@ -353,10 +390,12 @@ const Home = ({location}) => {
                     </div>
                     <div className="margin-top-bottom">
                         {userInfo.communications && userInfo.communications.map(user => {
+                            if(user in friends){
                             return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
                                 <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                                 <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                             </div>
+                            }else return null; //not done
                         })}
                     </div>
                 </div>
@@ -413,7 +452,7 @@ const Home = ({location}) => {
                         <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => StartMessageMobile()} title="Start Message" />
                         <div className="options-mobile" id="startMessage-content-mobile">
                             <p onClick = {() => startMessagingMobile()}>Start message</p>
-                            <p>Create group</p>
+                            <p onClick = {() => startCreateGroupMobile()}>Create group</p>
                             <p onClick = {() => closeMessageMobile()}>Cancel</p>
                         </div>
                         </span>
@@ -458,6 +497,16 @@ const Home = ({location}) => {
                             </div>
                         </form>
                     </div>
+                    <div className="mobile-overlay" id="create-group-content-mobile">
+                            <form className="margin-left-right text-light" onSubmit = {startCreateGroupMobile}>
+                                <span className="closebtn" onClick = {() => closeStartCreateGroupMobile()}>&times;</span>
+                                <h1 className="box-title">Create group</h1>
+                                <div className="form-group">
+                                    <p className="form-label">Group name:</p>
+                                    <input type = "text" className="form-control" />
+                                </div>
+                            </form>
+                        </div>
                 </div>
                 {!target?
                 <div className="main-mobile">

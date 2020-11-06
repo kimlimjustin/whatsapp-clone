@@ -10,17 +10,24 @@ const generateToken = (n) => {
     return randomToken(n);
 }
 
+require('dotenv').config();
+const SECURITY_KEY = process.env.SECURITY_KEY;
+
 router.post('/create', jsonParser, (req, res) => {
-    const {owner, token, name} = req.body;
-    User.findOne({_id: owner, token}, jsonParser, (err, user) => {
+    const {owner, token, name, member} = req.body;
+    User.findOne({_id: owner, token}, (err, user) => {
         if(err) res.status(500).json("Something went wrong.")
         else if(!user) res.status(403).json("Permission denied.")
         else{
-            const token = generateToken(50);
-            const group = new Group({admin: owner, name, token})
+            const code = generateToken(50);
+            const group = new Group({admin: owner, name, code, member})
             group.save()
-            .then(() => {message: "Group created.", group})
-            .catch(() => res.status(500),json("Something went wrong."))
+            .then(() => {
+                user.communications.push(group._id)
+                user.save()
+                .then(() => res.json({message: "Group created.", group}))
+            })
+            .catch((err) => res.status(500).json(err))
         }
     })
 })
@@ -45,11 +52,18 @@ router.post('/add/member', jsonParser, (req, res) => {
     })
 })
 
-router.get('/get_by_id/:id', jsonParser, (req, res) => {
-    const id = req.params.id;
-    Group.findById(id)
-    .then(group => res.json(group) )
-    .catch(() => res.status(500).json("Something went wrong."))
+router.post('/get_by_id/', jsonParser, (req, res) => {
+    const id = req.body.id;
+    const key = req.body.key;
+    if(!req.body.key) res.status(403).json("Permission denied.")
+    else{
+        if(key !== SECURITY_KEY) res.status(403).json("Permission denied.")
+        else{
+            Group.findById(id)
+            .then(group => res.json(group) )
+            .catch(() => res.status(500).json("Something went wrong."))
+        }
+    }
 })
 
 module.exports = router;

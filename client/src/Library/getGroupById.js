@@ -1,0 +1,15 @@
+const { default: Axios } = require("axios")
+const URL = process.env.REACT_APP_BACKEND_URL
+const SECURITY_KEY = process.env.REACT_APP_SECRET_KEY;
+
+const getGroupById = async id => {
+    if(id){
+        let _userinfo = null;
+        await Axios.post(`${URL}/group/get_by_id`, {id, key: SECURITY_KEY})
+        .then(res => _userinfo = res.data)
+        .catch(err => _userinfo =  err.response )
+        return _userinfo
+    }else return undefined;
+}
+
+module.exports = getGroupById
