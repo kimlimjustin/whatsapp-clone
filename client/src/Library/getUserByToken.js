@@ -1,6 +1,6 @@
 const { default: Axios } = require("axios")
-const { default: URL } = require("../Static/Backend.url.static")
-const { default: SECURITY_KEY } = require('../Static/SecretKey.static');
+const URL = process.env.REACT_APP_BACKEND_URL
+const SECURITY_KEY = process.env.REACT_APP_SECRET_KEY;
 
 const getUserByToken = async token => {
     if(token){

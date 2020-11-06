@@ -51,3 +51,5 @@ router.get('/get_by_id/:id', jsonParser, (req, res) => {
     .then(group => res.json(group) )
     .catch(() => res.status(500).json("Something went wrong."))
 })
+
+module.exports = router;

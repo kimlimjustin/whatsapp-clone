@@ -15,8 +15,10 @@ app.use(cors());
 
 const UserRouter = require('./Router/user.router');
 const {messageRouter, startMessage, createMessage} = require('./Router/message.router');
+const GroupRouter = require('./Router/group.router');
 app.use('/users', UserRouter);
 app.use('/messages', messageRouter);
+app.use('/group', GroupRouter);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`))

@@ -5,7 +5,6 @@ import Profile from "../Icons/profile.png";
 import Options from "../Icons/options.png";
 import MessageIcon from "../Icons/message.jpg";
 import Axios from 'axios';
-import URL from '../Static/Backend.url.static';
 import getAllUser from '../Library/getAllUser';
 import queryString from 'query-string';
 import io from 'socket.io-client';
@@ -13,6 +12,7 @@ import getUserById from '../Library/getUserById';
 import crypto from "crypto-js";
 
 let socket;
+const URL = process.env.REACT_APP_BACKEND_URL
 const Home = ({location}) => {
     const [userInfo, setUserInfo] = useState({});
     const [name, setName] = useState('');
@@ -32,6 +32,7 @@ const Home = ({location}) => {
     const messageContentMobile = document.querySelector("#startMessage-content-mobile");
     const startMessagingContent = document.querySelector("#start-messaging-content");
     const startMessagingContentMobile = document.querySelector("#start-messaging-content-mobile");
+    const createGroupContent = document.querySelector("#create-group-content");
 
     useEffect(() => {
         if(location.search && userInfo._id){
@@ -232,6 +233,14 @@ const Home = ({location}) => {
         window.location = `/?to=${inputEmail}`
     }
 
+    const startCreateGroup = () => {
+        if(createGroupContent) createGroupContent.style.width = "25%";
+        closeStartMessage()
+    }
+    const closeStartCreateGroup = () => {
+        if(createGroupContent) createGroupContent.style.width = "0";
+    }
+
     useEffect(() => {
         if(document.querySelector("#input-email") && users)
             Autocomplete(document.querySelector("#input-email"), users)
@@ -294,7 +303,7 @@ const Home = ({location}) => {
                             <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => startMessage()} title="Start Message" />
                             <div className="options-mobile" id="startMessage-content">
                                 <p onClick = {() => startMessaging()}>Start message</p>
-                                <p>Create group</p>
+                                <p onClick = {() => startCreateGroup()}>Create group</p>
                                 <p onClick = {() => closeStartMessage()}>Cancel</p>
                             </div>
                         </div>
@@ -308,6 +317,16 @@ const Home = ({location}) => {
                                 </div>
                                 <div className="form-group">
                                     <input type = "submit" className="form-control btn btn-light" value="Chat!" />
+                                </div>
+                            </form>
+                        </div>
+                        <div className="profile-content" id="create-group-content">
+                            <form className="margin-left-right text-light" onSubmit = {startChatting}>
+                                <span className="closebtn" onClick = {() => closeStartCreateGroup()}>&times;</span>
+                                <h1 className="box-title">Create group</h1>
+                                <div className="form-group">
+                                    <p className="form-label">Group name:</p>
+                                    <input type = "text" className="form-control" />
                                 </div>
                             </form>
                         </div>
@@ -451,7 +470,7 @@ const Home = ({location}) => {
                 </div>
                 :
                 <div className="main-mobile-chat">
-                    <div className="messages-mobile">
+                    <div className="messages-mobile" id="messages">
                         {messages.map(message => {
                             if(String(message.sender.id) === String(userInfo._id)){
                                 return <div className="messageContainer sentMessage" key = {message.iv}>

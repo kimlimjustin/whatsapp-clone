@@ -2,9 +2,9 @@ import Axios from "axios";
 import React, { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
 import { NavLink } from "react-router-dom";
-import URL from "../Static/Backend.url.static";
 import getUserByToken from "../Library/getUserByToken";
 
+const URL = process.env.REACT_APP_BACKEND_URL
 const Register = () => {
     const [inputEmail, setInputEmail] = useState('');
     const [inputPassword, setInputPassword] = useState('');
