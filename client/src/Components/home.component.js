@@ -11,6 +11,8 @@ import io from 'socket.io-client';
 import getUserById from '../Library/getUserById';
 import crypto from "crypto-js";
 import getGroupById from '../Library/getGroupById';
+import getGroupByCode from '../Library/getGroupByCode';
+import moment from "moment";
 
 let socket;
 const URL = process.env.REACT_APP_BACKEND_URL
@@ -29,6 +31,8 @@ const Home = ({location}) => {
     const [inputGroupName, setInputGroupName] = useState('');
     const [inputGroupMembers, setInputMembers] = useState([]);
     const [groups, setGroups] = useState({});
+    const [targetGroup, setTargetGroup] = useState('');
+    const [targetGroupAdmin, setTargetGroupAdmin] = useState('');
     const profileContent = document.querySelector("#profile-content");
     const optionsContent = document.querySelector("#options-content");
     const overlayContent = document.querySelector("#overlay-content");
@@ -38,36 +42,56 @@ const Home = ({location}) => {
     const startMessagingContentMobile = document.querySelector("#start-messaging-content-mobile");
     const createGroupContent = document.querySelector("#create-group-content");
     const createGroupContentMobile = document.querySelector("#create-group-content-mobile");
+    const groupInfoContent = document.querySelector("#groupInfo");
 
     useEffect(() => {
         if(location.search && userInfo._id){
             const { to } = queryString.parse(location.search);
             socket = io(URL);
+            if(to){
+                setTarget(to);
+                const token = new Cookies().get('token');
+                socket.emit('startMessage', {sender: userInfo._id, recipient: to, token, senderEmail: userInfo.email})
 
-            setTarget(to);
-            const token = new Cookies().get('token');
-            socket.emit('startMessage', {sender: userInfo._id, recipient: to, token, senderEmail: userInfo.email})
-
-            Axios.post(`${URL}/messages/get_messages`, {user: userInfo._id, token: userInfo.token, target: to})
-            .then(res => {
-                res.data.forEach(message => {
-                    setMessages(_messages => [..._messages, message])
-                })
-            })
-            .catch(err => console.log(err.response))
-
-            socket.on('message', (message) => {
-                if((message.recipient.email === to && message.sender.id === userInfo._id)
-                    || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
-                else{
-                    getUserById(message.sender.id).then(result => {
-                        setFriends(ex => ({...ex, [message.sender.id]: result}))
+                Axios.post(`${URL}/messages/get_messages`, {user: userInfo._id, token: userInfo.token, target: to})
+                .then(res => {
+                    res.data.forEach(message => {
+                        setMessages(_messages => [..._messages, message])
                     })
-                }
-            })
+                })
+                .catch(err => window.location = "/")
+
+                socket.on('message', (message) => {
+                    if((message.recipient.email === to && message.sender.id === userInfo._id)
+                        || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
+                    else{
+                        getUserById(message.sender.id).then(result => {
+                            setFriends(ex => ({...ex, [message.sender.id]: result}))
+                        })
+                    }
+                })
+            }
         }
         
     }, [location.search, userInfo])
+
+    useEffect(() => {
+        if(location.search && userInfo._id){
+            const {group} = queryString.parse(location.search);
+            socket = io(URL);
+            if(group){
+                getGroupByCode(group).then(result => setTargetGroup(result));
+                socket.emit('joinGroup', {group})
+            }
+        }
+    }, [location.search, userInfo, groups])
+
+    useEffect(() => {
+        if(targetGroup && targetGroup.admin){
+            getUserById(targetGroup.admin).then(result => setTargetGroupAdmin(result))
+            .catch(() => window.location = "/")
+        }
+    }, [targetGroup])
 
     useEffect(() => {
         const token = new Cookies().get('token');
@@ -252,6 +276,12 @@ const Home = ({location}) => {
     const closeStartCreateGroupMobile = () => {
         if(createGroupContentMobile) createGroupContentMobile.style.width = "0";
     }
+    const openGroupInfo = () => {
+        if(groupInfoContent) groupInfoContent.style.display = "block";
+    }
+    const closeGroupInfo = () => {
+        if(groupInfoContent) groupInfoContent.style.display = "none";
+    }
 
     useEffect(() => {
         if(document.querySelector("#input-email") && users)
@@ -304,9 +334,21 @@ const Home = ({location}) => {
         e.preventDefault();
         const token = new Cookies().get('token');
         Axios.post(`${URL}/group/create`, {member: inputGroupMembers, owner: userInfo._id, name: inputGroupName, token})
-        .then(res => console.log(res.data))
+        .then(res => {
+            window.location = `/?group=${encodeURIComponent(res.data.group.code)}`
+        })
         .catch(err => console.log(err.response))
     }
+    
+    const deleteGroup = () => {
+        if(window.confirm("Are you sure?")){
+            const token = new Cookies().get('token');
+            Axios.post(`${URL}/group/delete`, {group: targetGroup._id, token})
+            .then(() => window.location = "/")
+            .catch(() => window.location ="/")
+        }
+    }
+    useEffect(() => console.log(groups), [groups])
 
     return(
         <div className = "container-fluid">
@@ -390,25 +432,48 @@ const Home = ({location}) => {
                     </div>
                     <div className="margin-top-bottom">
                         {userInfo.communications && userInfo.communications.map(user => {
-                            if(user in friends){
+                            if(user in friends && friends[user]){
                             return <div className="sidenav-user" onClick = {() => window.location = `/?to=${friends[user].email}`} key = {user}>
                                 <h2 className="usernav-name">{friends[user] && friends[user].name}</h2>
                                 <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                             </div>
-                            }else if(user in groups){
-                                return <div key =  {user} className = "sidenav-user">
+                            }else if(user in groups && groups[user]){
+                                return <div key =  {user} className = "sidenav-user" onClick = {() => window.location = `/?group=${encodeURIComponent(groups[user].code)}`}>
                                 <h2 className="usernav-name">{groups[user] && groups[user].name}</h2>
-                                <h5 className="usernav-email">{groups[user] && groups[user].member.length} {groups[user].member.length > 1?<span>members</span>:<span>member</span>}</h5>
+                                <h5 className="usernav-email">{groups[user] && groups[user].member.length + 1} {groups[user].member.length +1 > 1?<span>members</span>:<span>member</span>}</h5>
                                 </div>
                             }else return null;
                         })}
                     </div>
                 </div>
-                {target?
+                {target || targetGroup?
                 <div className="main">
+                    {target?
                     <div className="user-info">
                         <h3 className="usernav-name">{target}</h3>
                     </div>
+                    :<div>
+                        <div className="user-info modal-btn" onClick = {openGroupInfo}>
+                            <h3 className="usernav-name">{targetGroup.name} ({targetGroup.member.length + 1} members)</h3>
+                        </div>
+                        <div className="modal" id="groupInfo">
+                            <div className="modal-content text-light">
+                                <span className="modal-close" onClick = {closeGroupInfo}>&times;</span>
+                                <h1 className="box-title">Group Info</h1>
+                                <p className="box-text">Created by <b>{targetGroupAdmin.name}</b> {moment(targetGroup.createdAt).fromNow()}</p>
+                                <h3 className="box-text">Members:</h3>
+                                {userInfo._id === targetGroupAdmin._id?
+                                <div>
+                                </div>
+                                :<div>
+
+                                </div>}
+                                {userInfo._id === targetGroupAdmin._id?
+                                <button className="btn btn-danger" onClick = {deleteGroup}>Delete group</button>
+                                :null}
+                            </div>
+                        </div>
+                    </div>}
                     <div className="messages" id="messages">
                         {messages.map(message => {
                             if(String(message.sender.id) === String(userInfo._id)){
@@ -503,7 +568,7 @@ const Home = ({location}) => {
                         </form>
                     </div>
                     <div className="mobile-overlay" id="create-group-content-mobile">
-                            <form className="margin-left-right text-light" onSubmit = {startCreateGroupMobile}>
+                            <form className="margin-left-right text-light" onSubmit = {createGroup}>
                                 <span className="closebtn" onClick = {() => closeStartCreateGroupMobile()}>&times;</span>
                                 <h1 className="box-title">Create group</h1>
                                 <div className="form-group">

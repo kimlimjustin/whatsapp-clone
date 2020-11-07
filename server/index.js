@@ -31,7 +31,7 @@ connection.once('open', () => {
 })
 const {addUser, removeUser, getUser, users} = require('./Router/onlineUsers');
 io.on('connection', socket => {
-    
+
     socket.on('disconnect', () => {
         removeUser(socket.id);
     })
@@ -48,5 +48,9 @@ io.on('connection', socket => {
             socket.emit('message', res)
             if(user) socket.to(user.id).emit("message", res)
         })
+    })
+    
+    socket.on('joinGroup', ({group}) => {
+        socket.join(group)
     })
 })

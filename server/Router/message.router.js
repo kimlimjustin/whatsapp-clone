@@ -72,7 +72,7 @@ router.post('/get_messages', jsonParser, (req, res) => {
         else{
             User.findOne({email: target}, (err, _user) => {
                 if(err) res.status(500).json("Something went wrong.");
-                else if(!user) res.status(403).json("Permission denied.")
+                else if(!_user) res.status(404).json("User not found.")
                 else{
                     Message.find({sender: user, recipient: _user._id})
                     .then(message => {

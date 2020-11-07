@@ -19,10 +19,14 @@ router.post('/create', jsonParser, (req, res) => {
         if(err) res.status(500).json("Something went wrong.")
         else if(!user) res.status(403).json("Permission denied.")
         else{
-            const code = generateToken(50);
+            const code = generateToken(25);
             const group = new Group({admin: owner, name, code, member})
             group.save()
             .then(() => {
+                member.forEach(_member => {
+                    User.findOne({email: _member})
+                    .then(user => {user.communications.push(group._id); user.save()})
+                })
                 user.communications.push(group._id)
                 user.save()
                 .then(() => res.json({message: "Group created.", group}))
@@ -64,6 +68,66 @@ router.post('/get_by_id/', jsonParser, (req, res) => {
             .catch(() => res.status(500).json("Something went wrong."))
         }
     }
+})
+
+router.post('/get_by_code', jsonParser, (req, res) => {
+    const {code, key} = req.body;
+    if(!key) res.status(403).json("Permission denied.")
+    else{
+        if(key!== SECURITY_KEY) res.status(403).json("Permission denied.")
+        else{
+            Group.findOne({code})
+            .then(group => res.json(group))
+            .catch(() => res.status(500).json("Something went wrong."))
+        }
+    }
+})
+
+const deleteElement = (initial, value) => {
+    var newArray = [];
+    for(let i = 0; i< initial.length; i++){
+        if(String(initial[i]) !== String(value)){
+            newArray.push(initial[i])
+        }
+    }
+    return newArray;
+}
+
+router.post('/delete', jsonParser, (req, res) => {
+    const {group, token} = req.body;
+    Group.findOne({_id: group})
+    .then(group => {
+        User.findOne({_id: group.admin, token})
+        .then(user => {
+            user.communications = deleteElement(user.communications, group._id)
+            user.save()
+            .then(() => {
+                let groupId = group._id;
+                const deleteCommunications = new Promise((resolve, reject) => {
+                    group.member.forEach((_member, index, array) => {
+                        User.findOne({email: _member})
+                        .then(_user => {
+                            _user.communications = deleteElement(_user.communications, groupId)
+                            _user.save()
+                            .then(() => {
+                                if(index === array.length - 1) resolve()})
+                            .catch(err => res.status(500).json(err))
+                        })
+                        .catch(err => res.status(500).json(err))
+                    })
+                })
+                deleteCommunications
+                .then(() => {
+                    group.delete()
+                    .then((res => res.json("Success")))
+                    .catch(err => res.status(500).json(err))
+                })
+            })
+            .catch(err => res.status(500).json(err))
+        })
+        .catch(() => res.status(500).json("Something went wrong."))
+    })
+    .catch(() => res.status(500).json("Something went wrong."))
 })
 
 module.exports = router;
