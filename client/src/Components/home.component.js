@@ -45,6 +45,8 @@ const Home = ({location}) => {
     const createGroupContentMobile = document.querySelector("#create-group-content-mobile");
     const groupInfoContent = document.querySelector("#groupInfo");
     const addUserContent = document.querySelector("#add-user");
+    const groupInfoMobile = document.querySelector("#groupInfo-mobile");
+    const addMemberMobileContent = document.querySelector("#addMember-mobile");
 
     useEffect(() => {
         if(location.search && userInfo._id){
@@ -292,6 +294,18 @@ const Home = ({location}) => {
     const closeAddMember = () => {
         if(addUserContent) addUserContent.style.display = "none";
     }
+    const openGroupInfoMobile = () => {
+        if(groupInfoMobile) groupInfoMobile.style.width = "100%";
+    }
+    const closeGroupInfoMobile = () => {
+        if(groupInfoMobile) groupInfoMobile.style.width = "0";
+    }
+    const addMemberMobile = () => {
+        if(addMemberMobileContent) addMemberMobileContent.style.width = "100%";
+    }
+    const closeAddMemberMobile = () => {
+        if(addMemberMobileContent) addMemberMobileContent.style.width = "0";
+    }
 
     useEffect(() => {
         if(document.querySelector("#input-email") && users)
@@ -374,6 +388,7 @@ const Home = ({location}) => {
             setTargetGroup(res.data.group);
             closeAddMember();
             openGroupInfo();
+            closeAddMemberMobile();
         })
     }
 
@@ -571,14 +586,66 @@ const Home = ({location}) => {
             /*Mobile*/
             :<div>
                 <div className="topnav-mobile">
-                    {!target?
+                    {!(target || targetGroup)?
                     <span className='topnav-mobile-title' onClick = {() => window.location = "/"}>Whatsapp clone</span>
                     :<span><span className='topnav-mobile-title' onClick = {() => window.location = "/"} style={{cursor: "pointer"}}>&lt;-&#9;</span>
-                    <span className="usernav-email">{target}</span></span>
+                    {target?<span className="usernav-email">{target}</span>:<span className="usernav-email" onClick = {openGroupInfoMobile}>{targetGroup.name}&nbsp;
+                    ({targetGroup.member.length + 1} {targetGroup.member.length + 1 > 1?<span>members</span>:<span>member</span>})</span>}</span>
                     }
+                    <div className="mobile-overlay" id="groupInfo-mobile">
+                        <span className="mobile-overlay-closeBtn text-light" onClick = {() => closeGroupInfoMobile()}>&times;</span>
+                        <div className="mobile-overlay-content text-light group-info-mobile">
+                            <h1 className="box-title">Group info:</h1>
+                            <p className="box-text">Created by <b>{targetGroupAdmin.name}</b> {moment(targetGroup.createdAt).fromNow()}</p>
+                            <h3>Members:</h3>
+                            {userInfo._id === targetGroupAdmin._id?
+                            <div>
+                                {targetGroup.member && targetGroup.member.map(user => {
+                                    return <div className="group-member" key = {user}>
+                                        <h3 className="usernav-email link" onClick = {() => window.location = `/?to=${user}`}>{user}</h3>
+                                        <li className="link text-danger remove-user" onClick = {() => removeUser(user)}>Remove</li>
+                                    </div>
+                                })}
+                            </div>
+                            :<div>
+                                {targetGroup.member && targetGroup.member.map(user => {
+                                    return <div className="group-member" key = {user}>
+                                        <h3 className="usernav-email link" onClick = {() => window.location = `/?to=${user}`}>{user}</h3>
+                                    </div>
+                                })}
+                            </div>}
+                            {userInfo._id === targetGroupAdmin._id?
+                            <div>
+                                <button className="btn btn-light" onClick = {addMemberMobile}>Add member</button><br />
+                                <button className="btn btn-danger" onClick = {deleteGroup}>Delete group</button>
+                            </div>
+                            :null}
+                        </div>
+                    </div>
+                    <div className="mobile-overlay" id="addMember-mobile">
+                        <span className="mobile-overlay-closeBtn text-light" onClick = {() => closeAddMemberMobile()}>&times;</span>
+                        <form className="mobile-overlay-content text-light group-info-mobile" onSubmit = {submitAddMember}>
+                            <h1 className="box-title">Add member</h1>
+                            <div className="form-group">
+                                {userInfo.communications && userInfo.communications.map(user => {
+                                    if(user in friends && targetGroup.member && !targetGroup.member.includes(friends[user].email)){
+                                    return <div key = {user} className="form-group">
+                                        <input type = "checkbox" id={friends[user] && `${friends[user].email}-new`} value = {friends[user] && friends[user].email} 
+                                        onChange = {({target: {checked, value}}) => {if(checked) setInputNewMember(prev => [...prev, value]);
+                                        else setInputNewMember(inputNewMember.filter(member => member !== value))}} />
+                                        <label htmlFor = {friends[user] && `${friends[user].email}-new`}>{friends[user] && friends[user].email}</label>
+                                        </div>
+                                    }else return null;
+                                })}
+                            </div>
+                            <div className="form-group">
+                                <input type = "submit" className="form-control btn btn-light" />
+                            </div>
+                        </form>
+                    </div>
                     <div className="options-dropdown">
                         <img src = {Options} className="topnav-mobile-options sidenav-pp" alt="navigation bar options" onClick = {() => openOptionsMobile()} />
-                        {!target?
+                        {!(target || targetGroup)?
                         <span>
                         <img src = {MessageIcon} className="sidenav-pp top-side-nav-right" alt="Navigation bar" onClick = {() => StartMessageMobile()} title="Start Message" />
                         <div className="options-mobile" id="startMessage-content-mobile">
@@ -634,7 +701,7 @@ const Home = ({location}) => {
                                 <h1 className="box-title">Create group</h1>
                                 <div className="form-group">
                                     <p className="form-label">Group name:</p>
-                                    <input type = "text" className="form-control" />
+                                    <input type = "text" className="form-control" value={inputGroupName} onChange = {({target: {value}}) => setInputGroupName(value)} />
                                 </div>
                                 <p className="form-group form-label">Members:</p>
                                 {userInfo.communications && userInfo.communications.map(user => {
@@ -653,7 +720,7 @@ const Home = ({location}) => {
                             </form>
                         </div>
                 </div>
-                {!target?
+                {!(target || targetGroup)?
                 <div className="main-mobile">
                     {userInfo.communications && userInfo.communications.map(user => {
                         if(user in friends){
@@ -662,9 +729,9 @@ const Home = ({location}) => {
                             <h5 className="usernav-email">{friends[user] && friends[user].email}</h5>
                         </div>
                         }else if(user in groups){
-                            return <div key =  {user} className = "sidenav-user">
+                            return <div key =  {user} className = "sidenav-user" onClick = {() => window.location = `/?group=${encodeURIComponent(groups[user].code)}`}>
                             <h2 className="usernav-name">{groups[user] && groups[user].name}</h2>
-                            <h5 className="usernav-email">{groups[user] && groups[user].member.length} {groups[user].member.length > 1?<span>members</span>:<span>member</span>}</h5>
+                            <h5 className="usernav-email">{groups[user] && groups[user].member.length + 1} {groups[user].member.length + 1 > 1?<span>members</span>:<span>member</span>}</h5>
                             </div>
                         }else return null;
                     })}
