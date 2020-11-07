@@ -354,3 +354,19 @@
 .modal-btn {
   cursor: pointer;
 }
+
+.group-member {
+  width: -webkit-fill-available;
+  padding: 10px;
+  margin: 5px;
+  background-color: #242d32;
+  cursor: pointer;
+}
+
+.group-member h3 {
+  margin: 0;
+}
+
+.remove-user {
+  margin: 0 0 0 10px;
+}

@@ -30,6 +30,7 @@ const Home = ({location}) => {
     const [messages, setMessages] = useState([]);
     const [inputGroupName, setInputGroupName] = useState('');
     const [inputGroupMembers, setInputMembers] = useState([]);
+    const [inputNewMember, setInputNewMember] = useState([]);
     const [groups, setGroups] = useState({});
     const [targetGroup, setTargetGroup] = useState('');
     const [targetGroupAdmin, setTargetGroupAdmin] = useState('');
@@ -43,6 +44,7 @@ const Home = ({location}) => {
     const createGroupContent = document.querySelector("#create-group-content");
     const createGroupContentMobile = document.querySelector("#create-group-content-mobile");
     const groupInfoContent = document.querySelector("#groupInfo");
+    const addUserContent = document.querySelector("#add-user");
 
     useEffect(() => {
         if(location.search && userInfo._id){
@@ -283,6 +285,14 @@ const Home = ({location}) => {
         if(groupInfoContent) groupInfoContent.style.display = "none";
     }
 
+    const addMember = () => {
+        closeGroupInfo();
+        if(addUserContent) addUserContent.style.display = "block";
+    }
+    const closeAddMember = () => {
+        if(addUserContent) addUserContent.style.display = "none";
+    }
+
     useEffect(() => {
         if(document.querySelector("#input-email") && users)
             Autocomplete(document.querySelector("#input-email"), users)
@@ -348,7 +358,24 @@ const Home = ({location}) => {
             .catch(() => window.location ="/")
         }
     }
-    useEffect(() => console.log(groups), [groups])
+    const removeUser = member => {
+        if(window.confirm("Are you sure?")){
+            const token = new Cookies().get('token');
+            Axios.post(`${URL}/group/remove_member`, {group: targetGroup._id, token, member})
+            .then(res => setTargetGroup(res.data.group))
+        }
+    }
+
+    const submitAddMember = e => {
+        e.preventDefault();
+        const token = new Cookies().get('token');
+        Axios.post(`${URL}/group/add/member`, {token, owner: userInfo._id, member: inputNewMember, group: targetGroup._id})
+        .then(res => {
+            setTargetGroup(res.data.group);
+            closeAddMember();
+            openGroupInfo();
+        })
+    }
 
     return(
         <div className = "container-fluid">
@@ -464,14 +491,48 @@ const Home = ({location}) => {
                                 <h3 className="box-text">Members:</h3>
                                 {userInfo._id === targetGroupAdmin._id?
                                 <div>
+                                    {targetGroup.member.map(user => {
+                                        return <div className="group-member" key = {user}>
+                                            <h3 className="usernav-email link" onClick = {() => window.location = `/?to=${user}`}>{user}</h3>
+                                            <li className="link text-danger remove-user" onClick = {() => removeUser(user)}>Remove</li>
+                                        </div>
+                                    })}
                                 </div>
                                 :<div>
-
+                                    {targetGroup.member.map(user => {
+                                        return <div className="group-member" key = {user}>
+                                            <h3 className="usernav-email link" onClick = {() => window.location = `/?to=${user}`}>{user}</h3>
+                                        </div>
+                                    })}
                                 </div>}
                                 {userInfo._id === targetGroupAdmin._id?
-                                <button className="btn btn-danger" onClick = {deleteGroup}>Delete group</button>
+                                <div>
+                                    <button className="btn btn-light" onClick = {addMember}>Add member</button><br />
+                                    <button className="btn btn-danger" onClick = {deleteGroup}>Delete group</button>
+                                </div>
                                 :null}
                             </div>
+                        </div>
+                        <div className="modal" id="add-user">
+                            <form className="modal-content text-light" onSubmit = {submitAddMember}>
+                                <span className="modal-close" onClick = {closeAddMember}>&times;</span>
+                                <h1 className="box-title">Add member</h1>
+                                <div className="form-group">
+                                    {userInfo.communications && userInfo.communications.map(user => {
+                                        if(user in friends && !targetGroup.member.includes(friends[user].email)){
+                                        return <div key = {user} className="form-group">
+                                            <input type = "checkbox" id={friends[user] && `${friends[user].email}-new`} value = {friends[user] && friends[user].email} 
+                                            onChange = {({target: {checked, value}}) => {if(checked) setInputNewMember(prev => [...prev, value]);
+                                            else setInputNewMember(inputNewMember.filter(member => member !== value))}} />
+                                            <label htmlFor = {friends[user] && `${friends[user].email}-new`}>{friends[user] && friends[user].email}</label>
+                                            </div>
+                                        }else return null;
+                                    })}
+                                </div>
+                                <div className="form-group">
+                                    <input type = "submit" className="form-control btn btn-light" />
+                                </div>
+                            </form>
                         </div>
                     </div>}
                     <div className="messages" id="messages">

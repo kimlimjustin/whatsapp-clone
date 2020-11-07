@@ -46,10 +46,32 @@ router.post('/add/member', jsonParser, (req, res) => {
                 if(err) res.status(500).json("Something went wrong.")
                 else if(!group) res.status(404).json("Group not found.")
                 else{
-                    group.member.push(member)
-                    group.save()
-                    .then(() => res.json("Success"))
-                    .catch(() => res.status(500).json("Something went wrong."))
+                    let groupId = group._id;
+                    User.findOne({email: member}, (err, user) => {
+                        if(err) res.status(500).json("Something went wrong.")
+                        else if(!user) res.status(404).json("Member not found")
+                        else{
+                            const addCommunication = new Promise((resolve, reject) => {
+                                member.forEach((_member, index, array) => {
+                                    User.findOne({email: _member})
+                                    .then(user => {
+                                        user.communications.push(groupId)
+                                        user.save()
+                                        .then(() => {if(index === array.length - 1) resolve()})
+                                    })
+                                })
+                            })
+                            addCommunication
+                            .then(() =>{
+                                for(let i = 0; i< member.length; i++){
+                                    group.member.push(member[i])
+                                }
+                                group.save()
+                                .then(() => {res.json({message:"Success", group})})
+                                .catch(() => res.status(500).json("Something went wrong."))      
+                            })
+                        }
+                    })
                 }
             })
         }
@@ -104,17 +126,17 @@ router.post('/delete', jsonParser, (req, res) => {
             .then(() => {
                 let groupId = group._id;
                 const deleteCommunications = new Promise((resolve, reject) => {
+                    if(group.member.length > 0){
                     group.member.forEach((_member, index, array) => {
                         User.findOne({email: _member})
                         .then(_user => {
                             _user.communications = deleteElement(_user.communications, groupId)
                             _user.save()
                             .then(() => {
-                                if(index === array.length - 1) resolve()})
-                            .catch(err => res.status(500).json(err))
+                                if(index === array.length - 1 || array.length === 0) resolve()})
                         })
-                        .catch(err => res.status(500).json(err))
                     })
+                    }else resolve()
                 })
                 deleteCommunications
                 .then(() => {
@@ -126,6 +148,36 @@ router.post('/delete', jsonParser, (req, res) => {
             .catch(err => res.status(500).json(err))
         })
         .catch(() => res.status(500).json("Something went wrong."))
+    })
+    .catch(() => res.status(500).json("Something went wrong."))
+})
+
+router.post('/remove_member', jsonParser, (req, res) => {
+    const {group, token, member} = req.body;
+    Group.findOne({_id: group})
+    .then(group => {
+        User.findOne({_id: group.admin, token})
+        .then(user => {
+            if(group.member.includes(member)){
+                const deleteCommunications = new Promise((resolve, reject) => {
+                    User.findOne({email: member})
+                    .then(user => {
+                        user.communications = deleteElement(user.communications, group._id)
+                        user.save()
+                        .then(() => resolve())
+                    })
+                })
+                deleteCommunications
+                .then(() => {
+                    group.member = deleteElement(group.member, member)
+                    group.save()
+                    .then(() => res.json({group, message: "Success"}))
+                })
+                .catch(() => res.status(500).json("Something went wrong."))
+            }
+            else res.status(400).json("Something went wrong.")
+        })
+        .catch(() => res.status(403).json("Permission denied."))
     })
     .catch(() => res.status(500).json("Something went wrong."))
 })
