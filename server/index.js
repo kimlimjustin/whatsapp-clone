@@ -14,7 +14,7 @@ app.use(express.json())
 app.use(cors());
 
 const UserRouter = require('./Router/user.router');
-const {messageRouter, startMessage, createMessage} = require('./Router/message.router');
+const {messageRouter, startMessage, createMessage, createGroupMessage} = require('./Router/message.router');
 const GroupRouter = require('./Router/group.router');
 app.use('/users', UserRouter);
 app.use('/messages', messageRouter);
@@ -29,7 +29,7 @@ const connection = mongoose.connection;
 connection.once('open', () => {
     console.log("MongoDB database connection established successfully");
 })
-const {addUser, removeUser, getUser, users} = require('./Router/onlineUsers');
+const {addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
 io.on('connection', socket => {
 
     socket.on('disconnect', () => {
@@ -42,15 +42,21 @@ io.on('connection', socket => {
     })
 
     socket.on('sendMessage', ({sender, recipient, token, message}) => {
-        const user = getUser(recipient)
         createMessage(sender, token, recipient, message)
         .then(res => {
-            socket.emit('message', res)
-            if(user) socket.to(user.id).emit("message", res)
+            io.emit('message', res)
+        })
+    })
+
+    socket.on('sendGroupMessage', ({sender, recipient, token, message}) => {
+        createGroupMessage(sender, token, recipient, message)
+        .then(res => {
+            io.to(res.recipient.code).emit('groupMessage', res)
         })
     })
     
-    socket.on('joinGroup', ({group}) => {
-        socket.join(group)
+    socket.on('joinGroup', ({group, userInfo}) => {
+        socket.join(group);
+        addUserIntoGroup({group, userInfo});
     })
 })

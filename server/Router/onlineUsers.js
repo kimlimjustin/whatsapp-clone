@@ -23,4 +23,14 @@ const removeUser = (id) => {
 
 const getUser = (email) => users.find((user)=> user.email === email);
 
-module.exports = {addUser, removeUser, getUser, users};
+const groups = {};
+const addUserIntoGroup = ({userInfo, group}) => {
+    if(!groups[group]){
+        groups[group] = [userInfo]
+    }
+    else if (!groups[group].find((user) => user._id === userInfo._id)){
+        groups[group].push(userInfo)
+    }
+}
+
+module.exports = {addUser, removeUser, getUser, users, groups, addUserIntoGroup};

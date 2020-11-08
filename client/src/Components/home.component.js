@@ -63,18 +63,17 @@ const Home = ({location}) => {
                         setMessages(_messages => [..._messages, message])
                     })
                 })
-                .catch(err => window.location = "/")
-
-                socket.on('message', (message) => {
-                    if((message.recipient.email === to && message.sender.id === userInfo._id)
-                        || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
-                    else{
-                        getUserById(message.sender.id).then(result => {
-                            setFriends(ex => ({...ex, [message.sender.id]: result}))
-                        })
-                    }
-                })
+                .catch(() => window.location = "/")
             }
+            socket.on('message', (message) => {
+                if((message.recipient.email === to && message.sender.id === userInfo._id)
+                    || (message.recipient.id === userInfo._id && message.sender.email === to )) setMessages(_messages => [..._messages, message])
+                else{
+                    getUserById(message.sender.id).then(result => {
+                        setFriends(ex => ({...ex, [message.sender.id]: result}))
+                    })
+                }
+            })
         }
         
     }, [location.search, userInfo])
@@ -83,12 +82,26 @@ const Home = ({location}) => {
         if(location.search && userInfo._id){
             const {group} = queryString.parse(location.search);
             socket = io(URL);
-            if(group){
+            if(group && userInfo._id){
                 getGroupByCode(group).then(result => setTargetGroup(result));
-                socket.emit('joinGroup', {group})
+                socket.emit('joinGroup', {group, userInfo})
+                const token = new Cookies().get('token')
+                Axios.post(`${URL}/messages/get_group_messages`, {user: userInfo._id, token: token, target: group})
+                .then(res => {
+                    res.data.forEach(message => {
+                        setMessages(_messages => [..._messages, message])
+                    })
+                })
+                .catch(err => console.log(err.response))
+                socket.on('groupMessage', (message) => {
+                    if(message.recipient.code === group){
+                        setMessages(_messages => [..._messages, message])
+                    }
+                })
             }
+            
         }
-    }, [location.search, userInfo, groups])
+    }, [location.search, userInfo])
 
     useEffect(() => {
         if(targetGroup && targetGroup.admin){
@@ -328,7 +341,11 @@ const Home = ({location}) => {
     const sendMessage = e => {
         e.preventDefault();
         const token = new Cookies().get('token')
-        socket.emit('sendMessage', {token, sender: userInfo._id, recipient: target, message: inputMessage, senderEmail: userInfo.email})
+        if(target){
+        socket.emit('sendMessage', {token, sender: userInfo._id, recipient: target, message: inputMessage})
+        }else if (targetGroup){
+        socket.emit('sendGroupMessage', {token, sender: userInfo._id, recipient: targetGroup._id, message: inputMessage})
+        }
         setInputMessage('')
     }
 
