@@ -141,7 +141,27 @@ router.post('/get_group_messages', jsonParser, (req, res) => {
                 else if(!group) res.status(404).json("Group not found.")
                 else{
                     Message.find({recipient: group._id})
-                    .then(messages => res.json(messages))
+                    .then(messages => {
+                        let finalResult = [];
+                        const getMessages = new Promise((resolve, reject) => {
+                            messages.forEach((message, index, array) => {
+                                if(message.sender !== user._id){
+                                    User.findById(message.sender)
+                                    .then(sender => {
+                                        finalResult.push({sender: {id: sender._id, email: sender.email}, recipient: {id: group._id, group: group.code},
+                                        iv: message.iv, message: message.message, key: message.key})
+                                    })
+                                    .then(() => {if(index === array.length - 1 || array.length === 0) resolve()})
+                                }else{
+                                    finalResult.push({sender: {id: user._id, email: user.email}, recipient: {id: group._id},
+                                    iv: message.iv, message: message.message, key: message.key})
+                                    if(index === array.length - 1 || array.length === 0) resolve()
+                                }
+                            })
+                        })
+                        getMessages
+                        .then(() => res.json(finalResult))
+                    })
                     .catch((err) => {res.status(500).json("Something went wrong.");})
                 }
             })
