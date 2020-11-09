@@ -349,8 +349,6 @@ const Home = ({location}) => {
         setInputMessage('')
     }
 
-    useEffect(() => console.log(messages), [messages])
-
     const decryptMessage = (key, message, iv) => {
         let _key = crypto.enc.Hex.parse(key);
         const result = crypto.AES.decrypt(message, _key, {
@@ -579,7 +577,9 @@ const Home = ({location}) => {
                                 return <div className="messageContainer receivedMessage" key = {message.iv}>
                                     <div className="messageBox messageBox-receive">
                                         <div className="messageText">
+                                            {!target?
                                             <span className="sender-info link" onClick = {() => window.location = `/?to=${message.sender.email}`}>{message.sender.email}</span>
+                                            :null}
                                             <p>{decryptMessage(message.key, message.message, message.iv)}</p>
                                         </div>
                                     </div>
