@@ -8,7 +8,7 @@ How to run:
 
 - Clone this repository or fork it.
   - To clone this repository type `git clone https://github.com/kimlimjustin/whatsapp-clone.git` on your command line
-  - To fork this repository, click fork button of this repository then type type `git clone https://github.com/<your username>/whatsapp-clone.git`
+  - To fork this repository, click fork button of this repository then type `git clone https://github.com/<your username>/whatsapp-clone.git`
 - Inside `server` folder, create a new file named `.env` which stores informations about server side such as `ATLAS_URI`, `SECURITY_KEY` and `CLIENT_URL` informations
   - store your database URI inside `ATLAS_URI` variable
   - store your security key inside `SECURITY_KEY` variable
