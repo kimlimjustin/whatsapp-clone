@@ -1,4 +1,4 @@
-const { default: Axios } = require("axios")
+import Axios from "axios";
 const URL = process.env.REACT_APP_BACKEND_URL
 const SECURITY_KEY = process.env.REACT_APP_SECRET_KEY;
 
@@ -12,4 +12,4 @@ const getUserByToken = async token => {
     }else return undefined;
 }
 
-module.exports = getUserByToken;
+export default getUserByToken;
