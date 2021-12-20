@@ -13,6 +13,16 @@ const io = socketio(server);
 app.use(express.json())
 app.use(cors());
 
+app.use((req, res, next) => {
+	res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL)
+	res.setHeader("Access-Control-Allow-Methods", 'GET, POST, DELETE')
+    res.setHeader("Access-Control-Allow-Headers", 'Content-Type', "Authorization")
+    res.setHeader("Access-Control-Allow-Credentials", true)
+    res.header('Content-Type', 'application/json;charset=UTF-8')
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+	next();
+})
+
 const UserRouter = require('./Router/user.router');
 const {messageRouter, startMessage, createMessage, createGroupMessage} = require('./Router/message.router');
 const GroupRouter = require('./Router/group.router');
