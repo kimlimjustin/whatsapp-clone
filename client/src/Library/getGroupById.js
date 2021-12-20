@@ -1,6 +1,6 @@
 import Axios from "axios";
 const URL = process.env.REACT_APP_BACKEND_URL
-const SECURITY_KEY = process.env.REACT_APP_SECRET_KEY;
+const SECURITY_KEY = process.env.REACT_APP_SECURITY_KEY ?? process.env.REACT_APP_SECRET_KEY;
 
 const getGroupById = async id => {
     if(id){

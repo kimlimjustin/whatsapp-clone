@@ -32,9 +32,9 @@ How to run:
 
 - Install all dependencies
 
-  - Client side: on the `client` directory type `npm install`
-  - Server side: on the `server` directory type `npm install`
+  - Client side: on the `client` directory type `npm install`(or `yarn`)
+  - Server side: on the `server` directory type `npm install`(or `yarn`)
 
 - Run it on node js:
-  - Client side: on the `client` directory type `npm start`
-  - Server side: on the `server` directory type `npm start`
+  - Client side: on the `client` directory type `npm start` (or `yarn`)
+  - Server side: on the `server` directory type `npm start` (or `yarn`)
