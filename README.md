@@ -17,7 +17,7 @@ How to run:
   ```
   ATLAS_URI =mongodb+srv://admin:<password>@cluster0.8aezk.gcp.mongodb.net/whatsappClone?retryWrites=true&w=majority
   SECURITY_KEY = D73373D9B4ED6FEC5B8B2DAF6WA929B1C7D14CDC88B196EBDCCEA77AFF7BB9
-  CLIENT_URL = http://localhost:3000/
+  CLIENT_URL = http://localhost:3000
   ```
 - Inside `client` folder, create a new file called `.env` which stores your information about client side such as `REACT_APP_SECURITY_KEY` and `REACT_APP_BACKEND_URL` informations
 
